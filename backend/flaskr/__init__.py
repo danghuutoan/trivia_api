@@ -271,41 +271,45 @@ def create_app(test_config=None):
   '''
     @app.route('/quizzes', methods=['POST'])
     def play_quizz():
-        try:
+        request_json = request.get_json()
+        category_id = request_json['quiz_category']['id']
+        previous_questions = request_json['previous_questions']
 
-            request_json = request.get_json()
-            category = request_json['quiz_category']['id']
-            previous_questions = request_json['previous_questions']
-
-            if category == 0:
+        if category_id == 0:
+            try:
                 questions = Question.query.all()
+            except:
+                abort(422)
+        else:
+            try:
+                category = Category.query.get(category_id)
+            except:
+                abort(422)
+
+            if category == None:
+                abort(404)
             else:
-                app.logger.info('193')
-                if Category.query.get(category) == None:
-                    app.logger.info('194')
-                    abort(404)
-                else:
+                try:
                     questions = Question.query.filter(
-                        Question.category == category).all()
+                        Question.category == category_id).all()
+                except:
+                    abort(422)
 
-                    filtered_questions = list(filter(lambda q: (
-                        q.id not in previous_questions), questions))
-                    questions_num = len(filtered_questions)
+                filtered_questions = list(filter(lambda q: (
+                    q.id not in previous_questions), questions))
 
-                    if questions_num:
-                        question_id = random.randint(1, questions_num)
-                        app.logger.info(filtered_questions)
-                        # category_id = category
-                        return jsonify({
-                            "success": True,
-                            "question": filtered_questions[question_id - 1].format()
-                        })
-                    else:
-                        return jsonify({
-                            "success": True
-                        })
-        except:
-            abort(422)
+                questions_num = len(filtered_questions)
+
+                if questions_num:
+                    question_id = random.randint(1, questions_num)
+                    return jsonify({
+                        "success": True,
+                        "question": filtered_questions[question_id - 1].format()
+                    })
+                else:
+                    return jsonify({
+                        "success": True
+                    })
 
     '''
   @TODO: 
