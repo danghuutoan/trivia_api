@@ -117,22 +117,26 @@ def create_app(test_config=None):
   '''
     @app.route('/questions')
     def retrieve_questions():
+        question_num = Question.query.count()
         page = request.args.get('page', 1, type=int)
         start = (page - 1) * 10
         end = start + 10
-        questions = Question.query.all()
-        categories = Category.query.all()
-        categories_list = {}
-        for category in categories:
-            categories_list.update({category.id: category.type})
+        if start > question_num:
+            abort(404)
+        else:
+            questions = Question.query.all()
+            categories = Category.query.all()
+            categories_list = {}
+            for category in categories:
+                categories_list.update({category.id: category.type})
 
-        data = []
-        for question in questions:
-            data.append(question.format())
-        return jsonify({"questions": data[start:end],
-                        "total_questions": len(data),
-                        "categories": categories_list
-                        })
+            data = []
+            for question in questions:
+                data.append(question.format())
+            return jsonify({"questions": data[start:end],
+                            "total_questions": len(data),
+                            "categories": categories_list
+                            })
 
     '''
   @TODO:
