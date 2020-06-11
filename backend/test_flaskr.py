@@ -50,31 +50,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data['categories']))
         self.assertTrue(data['total_questions'])
 
-    def test_get_categories(self):
-        res = self.client().get('/categories')
-        data = json.loads(res.data)
-
-        self.assertEqual(res.status_code, 200)
-        self.assertTrue(len(data['categories']))
-
-    # def test_delete_question(self):
-    #     res = self.client().delete('/questions/2')
-
-    #     data = json.loads(res.data)
-    #     question = Question.query.filter(Question.id == 2).one_or_none()
-
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(question, None)
-    #     self.assertEqual(data['question']['id'], 2)
-
-    def test_delele_invalid_question(self):
-        res = self.client().delete('/questions/100')
-
-        data = json.loads(res.data)
-
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data['success'], False)
-
     def test_create_new_question(self):
         res = self.client().post('/questions', json=self.new_question)
 
@@ -101,6 +76,39 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(data['questions'])
         self.assertEqual(data['questions'][0]['category'], 1)
+
+    # def test_delete_question(self):
+    #     res = self.client().delete('/questions/2')
+
+    #     data = json.loads(res.data)
+    #     question = Question.query.filter(Question.id == 2).one_or_none()
+
+    #     self.assertEqual(res.status_code, 200)
+    #     self.assertEqual(question, None)
+    #     self.assertEqual(data['question']['id'], 2)
+
+    def test_delele_invalid_question(self):
+        res = self.client().delete('/questions/100')
+
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+
+    def test_get_categories(self):
+        res = self.client().get('/categories')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(len(data['categories']))
+
+    def test_create_category(self):
+        res = self.client().post('/categories', json={"type": "new type"})
+        data = json.loads(res.data)
+        category_id = data['category']['id']
+        category = Category.query.get(category_id)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(category)
 
     def test_play_quiz_valid_category(self):
         res = self.client().post(

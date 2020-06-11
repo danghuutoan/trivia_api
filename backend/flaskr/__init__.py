@@ -277,7 +277,8 @@ def create_app(test_config=None):
 
         if category_id == 0:
             try:
-                questions = Question.query.all()
+                questions = Question.query.filter(
+                    Question.category.notin_(previous_questions)).all()
             except:
                 abort(422)
         else:
@@ -290,26 +291,23 @@ def create_app(test_config=None):
                 abort(404)
             else:
                 try:
-                    questions = Question.query.filter(
-                        Question.category == category_id).all()
+                    questions = Question.query.filter(Question.category.notin_(previous_questions),
+                                                      Question.category == category_id).all()
                 except:
                     abort(422)
 
-                filtered_questions = list(filter(lambda q: (
-                    q.id not in previous_questions), questions))
+        questions_num = len(questions)
 
-                questions_num = len(filtered_questions)
-
-                if questions_num:
-                    question_id = random.randint(1, questions_num)
-                    return jsonify({
-                        "success": True,
-                        "question": filtered_questions[question_id - 1].format()
-                    })
-                else:
-                    return jsonify({
-                        "success": True
-                    })
+        if questions_num:
+            question_id = random.randint(1, questions_num)
+            return jsonify({
+                "success": True,
+                "question": questions[question_id - 1].format()
+            })
+        else:
+            return jsonify({
+                "success": True
+            })
 
     '''
   @TODO: 
